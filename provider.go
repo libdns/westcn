@@ -5,6 +5,7 @@ package westcn
 import (
 	"context"
 	"fmt"
+	"sync"
 
 	"github.com/libdns/libdns"
 )
@@ -15,14 +16,15 @@ type Provider struct {
 	Username string `json:"username,omitempty"`
 	// APIPassword is your API password for west.cn, see https://www.west.cn/CustomerCenter/doc/apiv2.html#12u3001u8eabu4efdu9a8cu8bc10a3ca20id3d12u3001u8eabu4efdu9a8cu8bc13e203ca3e
 	APIPassword string `json:"api_password,omitempty"`
+	// once is used to ensure the client is initialized only once.
+	once sync.Once
+	//  client is the west.cn API client.
+	client *Client
 }
 
 // GetRecords lists all the records in the zone.
 func (p *Provider) GetRecords(ctx context.Context, zone string) ([]libdns.Record, error) {
-	client, err := p.getClient()
-	if err != nil {
-		return nil, err
-	}
+	client := p.getClient()
 
 	records, err := client.GetRecords(ctx, zone)
 	if err != nil {
@@ -43,10 +45,7 @@ func (p *Provider) GetRecords(ctx context.Context, zone string) ([]libdns.Record
 
 // AppendRecords adds records to the zone. It returns the records that were added.
 func (p *Provider) AppendRecords(ctx context.Context, zone string, records []libdns.Record) ([]libdns.Record, error) {
-	client, err := p.getClient()
-	if err != nil {
-		return nil, err
-	}
+	client := p.getClient()
 
 	var results []libdns.Record
 	for _, rec := range records {
@@ -70,10 +69,7 @@ func (p *Provider) AppendRecords(ctx context.Context, zone string, records []lib
 // SetRecords sets the records in the zone, either by updating existing records or creating new ones.
 // It returns the updated records.
 func (p *Provider) SetRecords(ctx context.Context, zone string, records []libdns.Record) ([]libdns.Record, error) {
-	client, err := p.getClient()
-	if err != nil {
-		return nil, err
-	}
+	client := p.getClient()
 
 	var results []libdns.Record
 	for _, rec := range records {
@@ -107,10 +103,7 @@ func (p *Provider) SetRecords(ctx context.Context, zone string, records []libdns
 
 // DeleteRecords deletes the records from the zone. It returns the records that were deleted.
 func (p *Provider) DeleteRecords(ctx context.Context, zone string, records []libdns.Record) ([]libdns.Record, error) {
-	client, err := p.getClient()
-	if err != nil {
-		return nil, err
-	}
+	client := p.getClient()
 
 	for _, record := range records {
 		rr := record.RR()
@@ -127,10 +120,7 @@ func (p *Provider) DeleteRecords(ctx context.Context, zone string, records []lib
 }
 
 func (p *Provider) getRecordId(ctx context.Context, zone, recName, recType string, recVal ...string) (int, error) {
-	client, err := p.getClient()
-	if err != nil {
-		return 0, err
-	}
+	client := p.getClient()
 
 	records, err := client.GetRecords(ctx, zone)
 	if err != nil {
@@ -149,8 +139,14 @@ func (p *Provider) getRecordId(ctx context.Context, zone, recName, recType strin
 	return 0, fmt.Errorf("record %q not found", recName)
 }
 
-func (p *Provider) getClient() (*Client, error) {
-	return NewClient(p.Username, p.APIPassword)
+func (p *Provider) getClient() *Client {
+	p.once.Do(func() {
+		if p.Username == "" || p.APIPassword == "" {
+			panic("westcn: credentials missing")
+		}
+		p.client = NewClient(p.Username, p.APIPassword)
+	})
+	return p.client
 }
 
 // Interface guards

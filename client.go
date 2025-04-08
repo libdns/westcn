@@ -6,7 +6,6 @@ import (
 	"crypto/md5"
 	"encoding/hex"
 	"encoding/json"
-	"errors"
 	"io"
 	"net/http"
 	"net/url"
@@ -33,11 +32,7 @@ type Client struct {
 }
 
 // NewClient creates a new Client.
-func NewClient(username, password string) (*Client, error) {
-	if username == "" || password == "" {
-		return nil, errors.New("credentials missing")
-	}
-
+func NewClient(username, password string) *Client {
 	baseURL, _ := url.Parse(defaultBaseURL)
 
 	return &Client{
@@ -46,7 +41,7 @@ func NewClient(username, password string) (*Client, error) {
 		encoder:    simplifiedchinese.GBK.NewEncoder(),
 		baseURL:    baseURL,
 		HTTPClient: &http.Client{Timeout: 10 * time.Second},
-	}, nil
+	}
 }
 
 // AppendRecord adds a record.
