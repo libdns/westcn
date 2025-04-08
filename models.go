@@ -2,7 +2,6 @@ package westcn
 
 import (
 	"fmt"
-	"strings"
 	"time"
 
 	"github.com/libdns/libdns"
@@ -29,14 +28,13 @@ type Records struct {
 }
 
 type Record struct {
-	ID     int    `json:"id,omitempty"`
-	Domain string `url:"domain,omitempty"` // 域名，删除记录时需要
-	Item   string `url:"item,omitempty"`   // 主机名称，获取记录时返回
-	Host   string `url:"host,omitempty"`   // 主机名称，添加记录时需要
-	Type   string `url:"type,omitempty"`
-	Value  string `url:"value,omitempty"`
-	TTL    int    `url:"ttl,omitempty"` // 60~86400 seconds
-	Level  int    `url:"level,omitempty"`
+	ID    int    `json:"id,omitempty"`
+	Item  string `json:"item,omitempty"` // 主机名称，获取记录时返回
+	Host  string `json:"host,omitempty"` // 主机名称，添加记录时需要
+	Type  string `json:"type,omitempty"`
+	Value string `json:"value,omitempty"`
+	TTL   int    `json:"ttl,omitempty"` // 60~86400 seconds
+	Level int    `json:"level,omitempty"`
 }
 
 func (r Record) libdnsRecord(zone string) (libdns.Record, error) {
@@ -59,11 +57,10 @@ func (r Record) libdnsRecord(zone string) (libdns.Record, error) {
 func westcnRecord(zone string, r libdns.Record) (Record, error) {
 	rr := r.RR()
 	westcnRec := Record{
-		Domain: strings.TrimSuffix(zone, "."),
-		Host:   rr.Name,
-		Type:   rr.Type,
-		TTL:    int(rr.TTL.Seconds()),
-		Value:  rr.Data,
+		Host:  rr.Name,
+		Type:  rr.Type,
+		TTL:   int(rr.TTL.Seconds()),
+		Value: rr.Data,
 	}
 	// Set default values for TTL and Level if not provided
 	if westcnRec.TTL <= 0 {

@@ -14,7 +14,6 @@ import (
 	"strings"
 	"time"
 
-	querystring "github.com/google/go-querystring/query"
 	"golang.org/x/text/encoding"
 	"golang.org/x/text/encoding/simplifiedchinese"
 	"golang.org/x/text/transform"
@@ -50,13 +49,16 @@ func NewClient(username, password string) (*Client, error) {
 	}, nil
 }
 
-// AddRecord adds a record.
+// AppendRecord adds a record.
 // https://www.west.cn/CustomerCenter/doc/domain_v2.html#37u3001u6dfbu52a0u57dfu540du89e3u67900a3ca20id3d37u3001u6dfbu52a0u57dfu540du89e3u67903e203ca3e
-func (c *Client) AddRecord(ctx context.Context, record Record) (int, error) {
-	values, err := querystring.Values(record)
-	if err != nil {
-		return 0, err
-	}
+func (c *Client) AppendRecord(ctx context.Context, zone string, record Record) (int, error) {
+	values := url.Values{}
+	values.Set("domain", strings.TrimSuffix(zone, "."))
+	values.Set("host", record.Host)
+	values.Set("type", record.Type)
+	values.Set("value", record.Value)
+	values.Set("ttl", strconv.Itoa(record.TTL))
+	values.Set("level", strconv.Itoa(record.Level))
 
 	req, err := c.newRequest(ctx, "domain", "adddnsrecord", values)
 	if err != nil {
@@ -77,9 +79,9 @@ func (c *Client) AddRecord(ctx context.Context, record Record) (int, error) {
 
 // GetRecords gets all records.
 // https://www.west.cn/CustomerCenter/doc/domain_v2.html#310u3001u83b7u53d6u57dfu540du89e3u6790u8bb0u5f550a3ca20id3d310u3001u83b7u53d6u57dfu540du89e3u6790u8bb0u5f553e203ca3e
-func (c *Client) GetRecords(ctx context.Context, domain string) ([]Record, error) {
+func (c *Client) GetRecords(ctx context.Context, zone string) ([]Record, error) {
 	values := url.Values{}
-	values.Set("domain", domain)
+	values.Set("domain", strings.TrimSuffix(zone, "."))
 	values.Set("limit", "1000")
 
 	req, err := c.newRequest(ctx, "domain", "getdnsrecord", values)
@@ -101,9 +103,9 @@ func (c *Client) GetRecords(ctx context.Context, domain string) ([]Record, error
 
 // DeleteRecord deleted a record.
 // https://www.west.cn/CustomerCenter/doc/domain_v2.html#39u3001u5220u9664u57dfu540du89e3u67900a3ca20id3d39u3001u5220u9664u57dfu540du89e3u67903e203ca3e
-func (c *Client) DeleteRecord(ctx context.Context, domain string, recordID int) error {
+func (c *Client) DeleteRecord(ctx context.Context, zone string, recordID int) error {
 	values := url.Values{}
-	values.Set("domain", domain)
+	values.Set("domain", strings.TrimSuffix(zone, "."))
 	values.Set("id", strconv.Itoa(recordID))
 
 	req, err := c.newRequest(ctx, "domain", "deldnsrecord", values)

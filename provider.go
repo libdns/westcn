@@ -5,7 +5,6 @@ package westcn
 import (
 	"context"
 	"fmt"
-	"strings"
 
 	"github.com/libdns/libdns"
 )
@@ -25,7 +24,7 @@ func (p *Provider) GetRecords(ctx context.Context, zone string) ([]libdns.Record
 		return nil, err
 	}
 
-	records, err := client.GetRecords(ctx, strings.TrimSuffix(zone, "."))
+	records, err := client.GetRecords(ctx, zone)
 	if err != nil {
 		return nil, err
 	}
@@ -55,7 +54,7 @@ func (p *Provider) AppendRecords(ctx context.Context, zone string, records []lib
 		if err != nil {
 			return nil, fmt.Errorf("parsing libdns record %+v: %v", rec, err)
 		}
-		if _, err = client.AddRecord(ctx, westcnRec); err != nil {
+		if _, err = client.AppendRecord(ctx, zone, westcnRec); err != nil {
 			return nil, err
 		}
 		libdnsRec, err := westcnRec.libdnsRecord(zone)
@@ -82,7 +81,7 @@ func (p *Provider) SetRecords(ctx context.Context, zone string, records []libdns
 		rr := rec.RR()
 		id, err := p.getRecordId(ctx, zone, rr.Name, rr.Type, rr.Data)
 		if err == nil {
-			if err = client.DeleteRecord(ctx, strings.TrimSuffix(zone, "."), id); err != nil {
+			if err = client.DeleteRecord(ctx, zone, id); err != nil {
 				return nil, err
 			}
 		}
@@ -91,7 +90,7 @@ func (p *Provider) SetRecords(ctx context.Context, zone string, records []libdns
 		if err != nil {
 			return nil, fmt.Errorf("parsing libdns record %+v: %v", rec, err)
 		}
-		_, err = client.AddRecord(ctx, westcnRec)
+		_, err = client.AppendRecord(ctx, zone, westcnRec)
 		if err != nil {
 			return nil, err
 		}
@@ -119,7 +118,7 @@ func (p *Provider) DeleteRecords(ctx context.Context, zone string, records []lib
 		if err != nil {
 			return nil, err
 		}
-		if err = client.DeleteRecord(ctx, strings.TrimSuffix(zone, "."), id); err != nil {
+		if err = client.DeleteRecord(ctx, zone, id); err != nil {
 			return nil, err
 		}
 	}
@@ -133,7 +132,7 @@ func (p *Provider) getRecordId(ctx context.Context, zone, recName, recType strin
 		return 0, err
 	}
 
-	records, err := client.GetRecords(ctx, strings.TrimSuffix(zone, "."))
+	records, err := client.GetRecords(ctx, zone)
 	if err != nil {
 		return 0, err
 	}
