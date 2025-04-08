@@ -77,7 +77,7 @@ func (c *Client) AddRecord(ctx context.Context, record Record) (int, error) {
 
 // GetRecords gets all records.
 // https://www.west.cn/CustomerCenter/doc/domain_v2.html#310u3001u83b7u53d6u57dfu540du89e3u6790u8bb0u5f550a3ca20id3d310u3001u83b7u53d6u57dfu540du89e3u6790u8bb0u5f553e203ca3e
-func (c *Client) GetRecords(ctx context.Context, domain string) ([]Item, error) {
+func (c *Client) GetRecords(ctx context.Context, domain string) ([]Record, error) {
 	values := url.Values{}
 	values.Set("domain", domain)
 	values.Set("limit", "1000")
@@ -96,7 +96,7 @@ func (c *Client) GetRecords(ctx context.Context, domain string) ([]Item, error) 
 		return nil, results
 	}
 
-	return results.Data.Items, nil
+	return results.Data.Records, nil
 }
 
 // DeleteRecord deleted a record.
