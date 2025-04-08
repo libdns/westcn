@@ -15,32 +15,48 @@ func TestProvider(t *testing.T) {
 		APIPassword: "",
 	}
 
-	fmt.Println(provider.GetRecords(context.Background(), ""))
+	recs, err := provider.GetRecords(context.Background(), "")
+	if err != nil {
+		t.Fatalf("failed to get records: %v", err)
+	}
+	fmt.Println(recs)
 
-	fmt.Println(provider.AppendRecords(context.Background(), "", []libdns.Record{
+	recs, err = provider.AppendRecords(context.Background(), "", []libdns.Record{
 		libdns.RR{
 			Name: "sub",
 			TTL:  10 * time.Minute,
 			Type: "A",
 			Data: "8.8.8.8",
 		},
-	}))
+	})
+	if err != nil {
+		t.Fatalf("failed to append records: %v", err)
+	}
+	fmt.Println(recs)
 
-	fmt.Println(provider.SetRecords(context.Background(), "", []libdns.Record{
+	recs, err = provider.SetRecords(context.Background(), "", []libdns.Record{
 		libdns.RR{
 			Name: "sub",
 			TTL:  10 * time.Minute,
 			Type: "A",
 			Data: "8.8.8.8",
 		},
-	}))
+	})
+	if err != nil {
+		t.Fatalf("failed to set records: %v", err)
+	}
+	fmt.Println(recs)
 
-	fmt.Println(provider.DeleteRecords(context.Background(), "", []libdns.Record{
+	recs, err = provider.DeleteRecords(context.Background(), "", []libdns.Record{
 		libdns.RR{
 			Name: "sub",
 			TTL:  10 * time.Minute,
 			Type: "A",
 			Data: "8.8.8.8",
 		},
-	}))
+	})
+	if err != nil {
+		t.Fatalf("failed to delete records: %v", err)
+	}
+	fmt.Println(recs)
 }
