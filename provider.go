@@ -44,6 +44,7 @@ func (p *Provider) GetRecords(ctx context.Context, zone string) ([]libdns.Record
 }
 
 // AppendRecords adds records to the zone. It returns the records that were added.
+// NOTE: This implementation is NOT atomic.
 func (p *Provider) AppendRecords(ctx context.Context, zone string, records []libdns.Record) ([]libdns.Record, error) {
 	client := p.getClient()
 
@@ -68,6 +69,7 @@ func (p *Provider) AppendRecords(ctx context.Context, zone string, records []lib
 
 // SetRecords sets the records in the zone, either by updating existing records or creating new ones.
 // It returns the updated records.
+// NOTE: This implementation is NOT atomic.
 func (p *Provider) SetRecords(ctx context.Context, zone string, records []libdns.Record) ([]libdns.Record, error) {
 	client := p.getClient()
 
@@ -102,6 +104,7 @@ func (p *Provider) SetRecords(ctx context.Context, zone string, records []libdns
 }
 
 // DeleteRecords deletes the records from the zone. It returns the records that were deleted.
+// NOTE: This implementation is NOT atomic.
 func (p *Provider) DeleteRecords(ctx context.Context, zone string, records []libdns.Record) ([]libdns.Record, error) {
 	client := p.getClient()
 
