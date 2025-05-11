@@ -27,6 +27,7 @@ type Client struct {
 	password string
 
 	encoder  *encoding.Encoder
+	decoder  *encoding.Decoder
 	endpoint *url.URL
 }
 
@@ -38,6 +39,7 @@ func NewClient(username, password string) *Client {
 		username: username,
 		password: password,
 		encoder:  simplifiedchinese.GBK.NewEncoder(),
+		decoder:  simplifiedchinese.GBK.NewDecoder(),
 		endpoint: endpoint,
 	}
 }
@@ -190,5 +192,5 @@ func (c *Client) encodeURLValues(values url.Values) (url.Values, error) {
 }
 
 func (c *Client) decodeResp(raw []byte, v any) error {
-	return json.NewDecoder(transform.NewReader(bytes.NewBuffer(raw), simplifiedchinese.GBK.NewDecoder())).Decode(v)
+	return json.NewDecoder(transform.NewReader(bytes.NewBuffer(raw), c.decoder)).Decode(v)
 }
