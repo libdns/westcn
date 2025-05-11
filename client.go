@@ -69,7 +69,7 @@ func (c *Client) AppendRecord(ctx context.Context, zone string, record Record) (
 		return 0, err
 	}
 	if resp.Result != http.StatusOK {
-		return 0, fmt.Errorf("westcn: %s, error code: %d", resp.Msg, resp.ErrorCode)
+		return 0, fmt.Errorf("%s, error code: %d", resp.Msg, resp.ErrorCode)
 	}
 
 	return resp.Data.ID, nil
@@ -96,7 +96,7 @@ func (c *Client) GetRecords(ctx context.Context, zone string) ([]Record, error) 
 		return nil, err
 	}
 	if resp.Result != http.StatusOK {
-		return nil, fmt.Errorf("westcn: %s, error code: %d", resp.Msg, resp.ErrorCode)
+		return nil, fmt.Errorf("%s, error code: %d", resp.Msg, resp.ErrorCode)
 	}
 
 	return resp.Data.Records, nil
@@ -123,12 +123,13 @@ func (c *Client) DeleteRecord(ctx context.Context, zone string, recordID int) er
 		return err
 	}
 	if resp.Result != http.StatusOK {
-		return fmt.Errorf("westcn: %s, error code: %d", resp.Msg, resp.ErrorCode)
+		return fmt.Errorf("%s, error code: %d", resp.Msg, resp.ErrorCode)
 	}
 
 	return nil
 }
 
+// newReq 创建新请求
 func (c *Client) newReq(ctx context.Context, p, act string, form url.Values) (*http.Request, error) {
 	// 签名请求
 	// https://www.west.cn/CustomerCenter/doc/apiv2.html#12u3001u8eabu4efdu9a8cu8bc10a3ca20id3d12u3001u8eabu4efdu9a8cu8bc13e203ca3e
@@ -138,7 +139,7 @@ func (c *Client) newReq(ctx context.Context, p, act string, form url.Values) (*h
 	form.Set("time", timestamp)
 	form.Set("token", hex.EncodeToString(sum[:]))
 
-	values, err := c.encodeURLValues(form)
+	values, err := c.encodeValues(form)
 	if err != nil {
 		return nil, err
 	}
@@ -171,7 +172,8 @@ func (c *Client) do(req *http.Request) ([]byte, error) {
 	return io.ReadAll(resp.Body)
 }
 
-func (c *Client) encodeURLValues(values url.Values) (url.Values, error) {
+// encodeValues GBK 编码 URL 参数
+func (c *Client) encodeValues(values url.Values) (url.Values, error) {
 	result := make(url.Values)
 
 	for k, vs := range values {
@@ -191,6 +193,7 @@ func (c *Client) encodeURLValues(values url.Values) (url.Values, error) {
 	return result, nil
 }
 
+// decodeResp GBK 解码响应
 func (c *Client) decodeResp(raw []byte, v any) error {
 	return json.NewDecoder(transform.NewReader(bytes.NewBuffer(raw), c.decoder)).Decode(v)
 }
