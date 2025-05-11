@@ -7,16 +7,25 @@ import (
 	"github.com/libdns/libdns"
 )
 
-type APIResponse[T any] struct {
+// APIResponse API响应结构体
+// Result: 200为成功，其他均为失败
+// Msg: 错误或提示信息
+// https://www.west.cn/CustomerCenter/doc/apiv2.html#12u3001u8eabu4efdu9a8cu8bc10a3ca20id3d12u3001u8eabu4efdu9a8cu8bc13e203ca3e56
+type APIResponse struct {
 	Result    int    `json:"result,omitempty"`
 	ClientID  string `json:"clientid,omitempty"`
-	Message   string `json:"msg,omitempty"`
+	Msg       string `json:"msg,omitempty"`
 	ErrorCode int    `json:"errcode,omitempty"`
-	Data      T      `json:"data,omitempty"`
 }
 
-func (a APIResponse[T]) Error() string {
-	return fmt.Sprintf("%d: %s (%d)", a.ErrorCode, a.Message, a.Result)
+type RecordIDResponse struct {
+	APIResponse
+	Data RecordID `json:"data,omitempty"`
+}
+
+type RecordsResponse struct {
+	APIResponse
+	Data Records `json:"data,omitempty"`
 }
 
 type RecordID struct {
